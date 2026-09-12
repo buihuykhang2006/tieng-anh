@@ -248,6 +248,17 @@ function randomOtherVocab(unit, excludeWord, count) {
   return shuffled.slice(0, count);
 }
 
+const DIALOGUE_NON_OBJECT_WORDS = new Set([
+  "hello", "hi", "goodbye", "please", "thanks", "welcome", "one", "two", "three", "four", "five",
+  "six", "seven", "eight", "nine", "ten", "today", "tomorrow", "yesterday", "week", "month", "year",
+  "morning", "afternoon", "evening", "night", "run", "jump", "walk", "dance", "sing", "draw", "read",
+  "write", "listen", "speak", "build", "learn", "wake up", "brush teeth", "eat breakfast", "go to school",
+  "play game", "take a shower", "sleep", "clean room", "help mom", "do homework", "ride bike", "healthy",
+  "warm", "cool", "sunny", "cloudy", "fluent", "confident", "clear", "smooth", "fast", "future", "dream",
+  "goal", "hope", "wish", "power", "courage", "plan", "success", "opinion", "reason", "fact", "point",
+  "question", "evidence", "claim", "response", "argue", "discuss", "talk", "meet", "practice", "result",
+]);
+
 function shuffle(arr) {
   return [...arr].sort(() => Math.random() - 0.5);
 }
@@ -324,7 +335,8 @@ function buildQuestions(unit, lesson) {
   ];
   qs.push(...translationQuestions);
 
-  const dialogueWords = vocab.slice(0, 2);
+  const dialogueCandidates = vocab.filter((v) => !DIALOGUE_NON_OBJECT_WORDS.has(v.word.toLowerCase()));
+  const dialogueWords = shuffle(dialogueCandidates.length >= 2 ? dialogueCandidates : vocab).slice(0, 2);
   const dialogueAnswer = `${dialogueWords[1].word}, please.`;
   qs.push({
     type: "dialogue",
