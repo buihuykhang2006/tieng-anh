@@ -294,14 +294,27 @@ function buildQuestions(unit, lesson) {
     english: v.word,
     vietnamese: v.vi,
   }));
-  qs.push({
-    type: "match",
-    prompt: "Nối từ tiếng Anh với nghĩa tiếng Việt",
-    pairs: matchingPairs,
-    english: matchingPairs.map((pair) => pair.english),
-    vietnamese: shuffle(matchingPairs.map((pair) => pair.vietnamese)),
-    answerText: matchingPairs.map((pair) => `${pair.english} = ${pair.vietnamese}`).join(", "),
-  });
+  const matchingQuestions = [
+    {
+      type: "match",
+      direction: "english-to-vietnamese",
+      prompt: "Nối từ tiếng Anh với nghĩa tiếng Việt",
+      pairs: matchingPairs,
+      left: matchingPairs.map((pair) => pair.english),
+      right: shuffle(matchingPairs.map((pair) => pair.vietnamese)),
+      answerText: matchingPairs.map((pair) => `${pair.english} = ${pair.vietnamese}`).join(", "),
+    },
+    {
+      type: "match",
+      direction: "vietnamese-to-english",
+      prompt: "Nối nghĩa tiếng Việt với từ tiếng Anh",
+      pairs: matchingPairs,
+      left: matchingPairs.map((pair) => pair.vietnamese),
+      right: shuffle(matchingPairs.map((pair) => pair.english)),
+      answerText: matchingPairs.map((pair) => `${pair.vietnamese} = ${pair.english}`).join(", "),
+    },
+  ];
+  qs.push(...matchingQuestions);
 
   (lesson.sentences || []).forEach((s) => {
     const words = s.prompt.split(",").map((w) => w.trim()).filter(Boolean);
@@ -313,7 +326,7 @@ function buildQuestions(unit, lesson) {
     });
   });
 
-  const matchingQuestion = qs.find((question) => question.type === "match");
-  const otherQuestions = shuffle(qs.filter((question) => question !== matchingQuestion));
-  return [matchingQuestion, ...otherQuestions].slice(0, 10);
+  const requiredMatchingQuestions = qs.filter((question) => question.type === "match");
+  const otherQuestions = shuffle(qs.filter((question) => question.type !== "match"));
+  return [...requiredMatchingQuestions, ...otherQuestions].slice(0, 10);
 }

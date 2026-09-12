@@ -208,7 +208,7 @@ function renderQuestionBody(q) {
 
     const englishColumn = document.getElementById("matching-english");
     const vietnameseColumn = document.getElementById("matching-vietnamese");
-    q.english.forEach((word) => {
+    q.left.forEach((word) => {
       const button = document.createElement("button");
       button.className = "matching-card";
       button.textContent = word;
@@ -216,7 +216,7 @@ function renderQuestionBody(q) {
       button.addEventListener("click", () => selectMatchingEnglish(word));
       englishColumn.appendChild(button);
     });
-    q.vietnamese.forEach((meaning) => {
+    q.right.forEach((meaning) => {
       const button = document.createElement("button");
       button.className = "matching-card";
       button.textContent = meaning;
