@@ -248,45 +248,6 @@ function randomOtherVocab(unit, excludeWord, count) {
   return shuffled.slice(0, count);
 }
 
-const DIALOGUE_NON_OBJECT_WORDS = new Set([
-  "hello", "hi", "goodbye", "please", "thanks", "welcome", "one", "two", "three", "four", "five",
-  "six", "seven", "eight", "nine", "ten", "today", "tomorrow", "yesterday", "week", "month", "year",
-  "morning", "afternoon", "evening", "night", "run", "jump", "walk", "dance", "sing", "draw", "read",
-  "write", "listen", "speak", "build", "learn", "wake up", "brush teeth", "eat breakfast", "go to school",
-  "play game", "take a shower", "sleep", "clean room", "help mom", "do homework", "ride bike", "healthy",
-  "warm", "cool", "sunny", "cloudy", "fluent", "confident", "clear", "smooth", "fast", "future", "dream",
-  "goal", "hope", "wish", "power", "courage", "plan", "success", "opinion", "reason", "fact", "point",
-  "question", "evidence", "claim", "response", "argue", "discuss", "talk", "meet", "practice", "result",
-  "teacher", "student", "friend", "class", "mother", "father", "brother", "sister", "baby", "grandma",
-  "grandpa", "aunt", "uncle", "cousin", "family", "people", "human", "leader", "manager", "client", "doctor",
-  "nurse", "farmer", "driver", "engineer", "artist", "cook", "pilot", "builder", "singer", "writer", "author",
-  "ancient", "past", "history", "memory", "empire", "culture", "tradition", "ceremony", "language", "story",
-  "dreams", "vision", "leadership", "decision", "support", "strategy", "focus", "innovation", "idea", "create",
-  "invent", "smart", "process", "product", "label", "system", "connect", "sentence", "fluency", "opinion",
-  "reason", "fact", "point", "debate", "evidence", "claim", "response", "presentation", "speech", "audience",
-  "topic", "pause", "show", "explain", "report", "writing", "draft", "essay", "paragraph", "letter", "grammar",
-  "journal", "public", "real", "world", "charge", "energy", "balance", "healthy", "exercise", "medicine", "pain",
-  "rest", "vitamin", "protect", "recycle", "waste", "eco", "science", "experiment", "gravity", "lab", "atom",
-  "galaxy", "research", "price", "money", "cash", "discount", "buy", "sell", "success", "target", "task", "salary",
-  "work", "career", "goal", "hope", "wish", "power", "bravery", "courage", "plan", "future", "tomorrow",
-  "red", "blue", "green", "yellow", "black", "white", "pink", "purple", "orange", "brown", "gray", "gold",
-  "head", "face", "hand", "foot", "eye", "ear", "mouth", "hair", "arm", "leg", "shoulder", "smile",
-  "sun", "cloud", "rain", "wind", "snow", "storm", "warm", "cool", "sunny", "cloudy", "fog", "rainbow",
-  "pattern", "magic", "shape", "style", "decoration", "canvas", "poster", "brand", "art", "design", "color",
-  "hero", "dragon", "castle", "treasure", "legend", "king", "queen", "princess", "adventure", "journey", "trail",
-  "discovery", "summit", "dream", "communication", "message", "email", "call", "note", "reply", "address", "media",
-  "video", "photo", "news", "channel", "stream", "social", "record", "career", "office", "project", "team", "leader",
-  "technology", "website", "software", "screen", "battery", "culture", "festival", "party", "celebration", "nature",
-  "environment", "planet", "space", "galaxy", "shopping", "list", "receipt", "books", "page", "chapter", "novel",
-  "comic", "reader", "stories", "fluency", "debate", "presentation", "writing", "real", "world", "music", "song",
-  "beat", "rhythm", "voice", "concert", "sports", "training", "score", "coach", "team", "travel", "trip", "tour",
-  "guide", "holiday", "health", "medicine", "energy", "balance", "technology", "culture", "innovation", "future",
-]);
-
-function isDialogueObject(vocabItem) {
-  return !DIALOGUE_NON_OBJECT_WORDS.has(vocabItem.word.toLowerCase());
-}
-
 function shuffle(arr) {
   return [...arr].sort(() => Math.random() - 0.5);
 }
@@ -363,28 +324,6 @@ function buildQuestions(unit, lesson) {
   ];
   qs.push(...translationQuestions);
 
-  const unitDialogueCandidates = unit.lessons
-    .flatMap((unitLesson) => unitLesson.vocab)
-    .filter(isDialogueObject);
-  const courseDialogueCandidates = COURSE.units
-    .flatMap((courseUnit) => courseUnit.lessons.flatMap((courseLesson) => courseLesson.vocab))
-    .filter(isDialogueObject);
-  const dialogueCandidates = [...unitDialogueCandidates, ...courseDialogueCandidates]
-    .filter((v, index, items) => items.findIndex((item) => item.word === v.word) === index);
-  const dialogueWords = shuffle(dialogueCandidates).slice(0, 2);
-  const dialogueAnswer = `${dialogueWords[1].word}, please.`;
-  qs.push({
-    type: "dialogue",
-    prompt: "Hoàn thành hội thoại",
-    dialogueQuestion: `${dialogueWords[0].word} or ${dialogueWords[1].word}?`,
-    options: shuffle([
-      `${dialogueWords[0].word}, please.`,
-      dialogueAnswer,
-      "Welcome.",
-    ]),
-    answer: dialogueAnswer,
-  });
-
   (lesson.sentences || []).forEach((s) => {
     const words = s.prompt.split(",").map((w) => w.trim()).filter(Boolean);
     qs.push({
@@ -395,7 +334,7 @@ function buildQuestions(unit, lesson) {
     });
   });
 
-  const requiredQuestions = qs.filter((question) => ["translate", "dialogue"].includes(question.type));
-  const otherQuestions = shuffle(qs.filter((question) => !["translate", "dialogue"].includes(question.type)));
-  return [...requiredQuestions, ...otherQuestions].slice(0, 10);
+  const requiredTranslationQuestions = qs.filter((question) => question.type === "translate");
+  const otherQuestions = shuffle(qs.filter((question) => question.type !== "translate"));
+  return [...requiredTranslationQuestions, ...otherQuestions].slice(0, 10);
 }

@@ -224,33 +224,6 @@ function renderQuestionBody(q) {
     });
   }
 
-  if (q.type === "dialogue") {
-    area.innerHTML = `
-      <div class="quiz-prompt">${q.prompt}</div>
-      <div class="dialogue-scene">
-        <div class="dialogue-character">🧑‍🏫</div>
-        <div class="dialogue-bubble">🔊 ${q.dialogueQuestion}</div>
-      </div>
-      <div class="dialogue-answer-bubble">${selected || ""}</div>
-      <div class="dialogue-options" id="opt-grid"></div>
-    `;
-    const grid = document.getElementById("opt-grid");
-    q.options.forEach((option, index) => {
-      const card = document.createElement("button");
-      card.className = "dialogue-option";
-      card.innerHTML = `<span class="dialogue-number">${index + 1}</span><span>${option}</span>`;
-      card.addEventListener("click", () => {
-        if (feedbackState) return;
-        selected = option;
-        document.querySelector(".dialogue-answer-bubble").textContent = option;
-        [...grid.children].forEach((item) => item.classList.remove("selected"));
-        card.classList.add("selected");
-        updateCheckBtn();
-      });
-      grid.appendChild(card);
-    });
-  }
-
   if (q.type === "match") {
     area.innerHTML = `
       <div class="quiz-prompt">${q.prompt}</div>
