@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Học tập — English Adventure</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="side-brand"><span>🦊</span> English Adventure</div>
+    <a href="learn.html" class="side-link active"><span class="ic">🏠</span> Học tập</a>
+    <a href="profile.html" class="side-link"><span class="ic">👤</span> Hồ sơ & Huy hiệu</a>
+    <a href="index.html" class="side-link"><span class="ic">🚪</span> Trang chủ</a>
+  </aside>
+
+  <div>
+    <div class="topbar">
+      <div class="pill streak">🔥 <span id="pill-streak">0</span></div>
+      <div class="pill hearts">❤️ <span id="pill-hearts">5</span></div>
+      <div class="pill xp">⭐ <span id="pill-xp">0</span> XP</div>
+    </div>
+
+    <main class="main-content">
+      <h1 class="page-title" id="page-title">Level 1 · Beginner 🌱</h1>
+      <p class="page-sub">Chọn một bài học để bắt đầu chặng phiêu lưu hôm nay!</p>
+
+      <div id="units-container"></div>
+    </main>
+  </div>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/learn.js"></script>
+</body>
+</html>
