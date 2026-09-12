@@ -290,31 +290,31 @@ function buildQuestions(unit, lesson) {
     });
   });
 
-  const matchingPairs = shuffle(vocab).slice(0, Math.min(4, vocab.length)).map((v) => ({
-    english: v.word,
-    vietnamese: v.vi,
-  }));
-  const matchingQuestions = [
+  const translatedVocab = vocab.filter((v) => v.vi !== v.word);
+  const translationVocab = shuffle(translatedVocab.length >= 2 ? translatedVocab : vocab).slice(0, 2);
+  const vietnameseDistractors = randomOtherVocab(unit, translationVocab[0].word, 8)
+    .filter((v) => v.vi !== v.word)
+    .slice(0, 2)
+    .map((v) => v.vi);
+  const translationQuestions = [
     {
-      type: "match",
+      type: "translate",
       direction: "english-to-vietnamese",
-      prompt: "Nối từ tiếng Anh với nghĩa tiếng Việt",
-      pairs: matchingPairs,
-      left: matchingPairs.map((pair) => pair.english),
-      right: shuffle(matchingPairs.map((pair) => pair.vietnamese)),
-      answerText: matchingPairs.map((pair) => `${pair.english} = ${pair.vietnamese}`).join(", "),
+      prompt: "Viết lại bằng tiếng Việt",
+      source: translationVocab[0].word,
+      options: shuffle([translationVocab[0].vi, ...vietnameseDistractors]),
+      answer: translationVocab[0].vi,
     },
     {
-      type: "match",
+      type: "translate",
       direction: "vietnamese-to-english",
-      prompt: "Nối nghĩa tiếng Việt với từ tiếng Anh",
-      pairs: matchingPairs,
-      left: matchingPairs.map((pair) => pair.vietnamese),
-      right: shuffle(matchingPairs.map((pair) => pair.english)),
-      answerText: matchingPairs.map((pair) => `${pair.vietnamese} = ${pair.english}`).join(", "),
+      prompt: "Viết lại bằng tiếng Anh",
+      source: translationVocab[1].vi,
+      options: shuffle([translationVocab[1].word, ...randomOtherVocab(unit, translationVocab[1].word, 2).map((v) => v.word)]),
+      answer: translationVocab[1].word,
     },
   ];
-  qs.push(...matchingQuestions);
+  qs.push(...translationQuestions);
 
   (lesson.sentences || []).forEach((s) => {
     const words = s.prompt.split(",").map((w) => w.trim()).filter(Boolean);
@@ -326,7 +326,7 @@ function buildQuestions(unit, lesson) {
     });
   });
 
-  const requiredMatchingQuestions = qs.filter((question) => question.type === "match");
-  const otherQuestions = shuffle(qs.filter((question) => question.type !== "match"));
-  return [...requiredMatchingQuestions, ...otherQuestions].slice(0, 10);
+  const requiredTranslationQuestions = qs.filter((question) => question.type === "translate");
+  const otherQuestions = shuffle(qs.filter((question) => question.type !== "translate"));
+  return [...requiredTranslationQuestions, ...otherQuestions].slice(0, 10);
 }

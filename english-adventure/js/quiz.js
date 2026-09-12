@@ -196,6 +196,34 @@ function renderQuestionBody(q) {
     renderOrderUI();
   }
 
+  if (q.type === "translate") {
+    area.innerHTML = `
+      <div class="quiz-prompt">${q.prompt}</div>
+      <div class="translation-source">
+        <span class="translation-speaker">🔊</span>
+        <span>${q.source}</span>
+      </div>
+      <div class="translation-divider"></div>
+      <div class="translation-answer-line" id="translation-answer"></div>
+      <div class="translation-word-bank" id="opt-grid"></div>
+    `;
+    const grid = document.getElementById("opt-grid");
+    q.options.forEach((option) => {
+      const card = document.createElement("button");
+      card.className = "translation-option";
+      card.innerHTML = `<span>${option}</span>`;
+      card.addEventListener("click", () => {
+        if (feedbackState) return;
+        selected = option;
+        document.getElementById("translation-answer").textContent = option;
+        [...grid.children].forEach((item) => item.classList.remove("selected"));
+        card.classList.add("selected");
+        updateCheckBtn();
+      });
+      grid.appendChild(card);
+    });
+  }
+
   if (q.type === "match") {
     area.innerHTML = `
       <div class="quiz-prompt">${q.prompt}</div>
