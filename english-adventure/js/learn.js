@@ -33,12 +33,23 @@ function statusOf(lessonId) {
 
 function renderUnits() {
   const container = document.getElementById("units-container");
+  if (!container) return;
   container.innerHTML = "";
 
   const allLevels = (COURSE.levels && COURSE.levels.length) ? COURSE.levels : [{ id: "all", name: "All Levels", icon: "🗺️", units: COURSE.units }];
 
   allLevels.forEach((level, levelIndex) => {
-    const levelUnits = level.units || COURSE.units.filter((unit) => unit.id.startsWith(level.id || ""));
+    const rawLevelUnits = Array.isArray(level.units) ? level.units : [];
+    const levelUnits = rawLevelUnits
+      .map((entry) => {
+        if (!entry) return null;
+        if (typeof entry === "string") {
+          return COURSE.units.find((unit) => unit.name === entry) || null;
+        }
+        if (entry.lessons) return entry;
+        return COURSE.units.find((unit) => unit.id === entry.id || unit.name === entry.name) || null;
+      })
+      .filter(Boolean);
     const levelUnlocked = !level.id || level.id === "all" ? true : isLevelUnlocked(profile, level.id);
 
     const levelSection = document.createElement("section");
