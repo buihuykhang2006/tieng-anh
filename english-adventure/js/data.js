@@ -82,6 +82,18 @@ const UNIT_ICONS = {
 
 const UNIT_COLORS = ["#3FA7D6", "#8E7CC3", "#E85D75", "#3FA76B", "#F2994A", "#F7B267", "#7FBCB8", "#FF6B6B", "#4ECDC4", "#5B8DEF"];
 
+const VOCAB_WORD_ORDER = [...new Set(Object.values(WORD_BANK).flat())];
+const UNIQUE_ICON_MARKS = ["🔴", "🔵", "🟢", "🟡", "🟣", "🟠", "⚫", "⚪", "🟤", "🩷", "⭐", "✨", "🌟", "💫", "🔥", "💧", "🍀", "🌈", "🌙", "☀️", "🍎", "🍋", "🍇", "🥕", "🌸", "🌻", "🌿", "🎈", "🎵", "🎯", "🚀", "💎"];
+
+function getUniqueIconMark(word) {
+  const index = VOCAB_WORD_ORDER.indexOf(word);
+  if (index < 0) return "✨";
+  const size = UNIQUE_ICON_MARKS.length;
+  const first = UNIQUE_ICON_MARKS[Math.floor(index / size) % size];
+  const second = UNIQUE_ICON_MARKS[index % size];
+  return `${first}${second}`;
+}
+
 function buildVocabulary(word) {
   const trimmed = String(word).trim();
   const base = trimmed.toLowerCase().replace(/\s+/g, "");
@@ -122,7 +134,7 @@ function buildVocabulary(word) {
   return {
     word: trimmed,
     vi: viMap[trimmed] || trimmed,
-    emoji: emojiMap[trimmed] || emojiMap[base] || "📘",
+    emoji: `${emojiMap[trimmed] || emojiMap[base] || "📘"}${getUniqueIconMark(trimmed)}`,
     ipa: `/${base}/`
   };
 }
