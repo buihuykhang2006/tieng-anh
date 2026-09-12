@@ -420,6 +420,35 @@ img.pixel { image-rendering: pixelated; }
 .option-card.correct { border-color: var(--forest); background: #e4f4ec; color: var(--forest); }
 .option-card.wrong { border-color: var(--berry); background: #fdeaee; color: var(--berry); }
 
+.matching-board {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  max-width: 720px;
+  margin: 0 auto 14px;
+}
+.matching-column { display: flex; flex-direction: column; gap: 10px; }
+.matching-card {
+  min-height: 52px;
+  padding: 12px 14px;
+  border: 2px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--paper);
+  color: var(--ink);
+  font-family: "Baloo 2", sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  box-shadow: 0 3px 0 var(--line);
+}
+.matching-card:hover { border-color: var(--sky); }
+.matching-card.selected { border-color: var(--sky); background: #eaf6fc; }
+.matching-card.matched { border-color: var(--forest); background: #e4f4ec; color: var(--forest); }
+.matching-status { text-align: center; color: var(--ink-soft); font-weight: 700; }
+@media (max-width: 500px) {
+  .matching-board { gap: 8px; }
+  .matching-card { padding: 10px 8px; font-size: 0.9rem; overflow-wrap: anywhere; }
+}
+
 .word-bank { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 22px; min-height: 50px; }
 .answer-slot {
   display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;

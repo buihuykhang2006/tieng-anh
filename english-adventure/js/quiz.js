@@ -23,6 +23,8 @@ let correctCount = 0;
 let orderPlaced = [];
 let orderBank = [];
 let selected = null;
+let matchingSelectedEnglish = null;
+let matchingPairs = [];
 let feedbackState = null; // null | 'correct' | 'wrong'
 let heartsOut = false;
 
@@ -88,6 +90,8 @@ function renderQuestion() {
   feedbackState = null;
   orderPlaced = [];
   orderBank = q.type === "order" ? [...q.words] : [];
+  matchingSelectedEnglish = null;
+  matchingPairs = [];
 
   root.innerHTML = `
     <div class="quiz-shell">
@@ -191,6 +195,67 @@ function renderQuestionBody(q) {
     `;
     renderOrderUI();
   }
+
+  if (q.type === "match") {
+    area.innerHTML = `
+      <div class="quiz-prompt">${q.prompt}</div>
+      <div class="matching-board">
+        <div class="matching-column" id="matching-english"></div>
+        <div class="matching-column" id="matching-vietnamese"></div>
+      </div>
+      <div class="matching-status" id="matching-status">Đã nối: 0/${q.pairs.length}</div>
+    `;
+
+    const englishColumn = document.getElementById("matching-english");
+    const vietnameseColumn = document.getElementById("matching-vietnamese");
+    q.english.forEach((word) => {
+      const button = document.createElement("button");
+      button.className = "matching-card";
+      button.textContent = word;
+      button.dataset.value = word;
+      button.addEventListener("click", () => selectMatchingEnglish(word));
+      englishColumn.appendChild(button);
+    });
+    q.vietnamese.forEach((meaning) => {
+      const button = document.createElement("button");
+      button.className = "matching-card";
+      button.textContent = meaning;
+      button.dataset.value = meaning;
+      button.addEventListener("click", () => selectMatchingVietnamese(meaning));
+      vietnameseColumn.appendChild(button);
+    });
+  }
+}
+
+function selectMatchingEnglish(word) {
+  if (feedbackState || matchingPairs.some((pair) => pair.english === word)) return;
+  matchingSelectedEnglish = word;
+  document.querySelectorAll("#matching-english .matching-card").forEach((card) => {
+    card.classList.toggle("selected", card.dataset.value === word);
+  });
+}
+
+function selectMatchingVietnamese(meaning) {
+  if (feedbackState || !matchingSelectedEnglish) return;
+  if (matchingPairs.some((pair) => pair.vietnamese === meaning)) return;
+  matchingPairs.push({ english: matchingSelectedEnglish, vietnamese: meaning });
+  matchingSelectedEnglish = null;
+  updateMatchingBoard();
+  updateCheckBtn();
+}
+
+function updateMatchingBoard() {
+  const matchedEnglish = new Set(matchingPairs.map((pair) => pair.english));
+  const matchedVietnamese = new Set(matchingPairs.map((pair) => pair.vietnamese));
+  document.querySelectorAll("#matching-english .matching-card").forEach((card) => {
+    card.classList.toggle("matched", matchedEnglish.has(card.dataset.value));
+    card.classList.remove("selected");
+  });
+  document.querySelectorAll("#matching-vietnamese .matching-card").forEach((card) => {
+    card.classList.toggle("matched", matchedVietnamese.has(card.dataset.value));
+  });
+  const status = document.getElementById("matching-status");
+  if (status) status.textContent = `Đã nối: ${matchingPairs.length}/${questions[qIndex].pairs.length}`;
 }
 
 function renderOrderUI() {
@@ -232,7 +297,9 @@ function updateCheckBtn() {
   const btn = document.getElementById("check-btn");
   if (!btn) return;
   const q = questions[qIndex];
-  const ready = q.type === "order" ? orderPlaced.length === q.words.length : !!selected;
+  const ready = q.type === "order"
+    ? orderPlaced.length === q.words.length
+    : q.type === "match" ? matchingPairs.length === q.pairs.length : !!selected;
   btn.disabled = !ready;
 }
 
@@ -252,6 +319,10 @@ function handleCheck() {
 
   if (q.type === "order") {
     ok = normalize(orderPlaced.join(" ")) === normalize(q.answer);
+  } else if (q.type === "match") {
+    ok = q.pairs.every((pair) => matchingPairs.some((selectedPair) =>
+      selectedPair.english === pair.english && selectedPair.vietnamese === pair.vietnamese
+    ));
   } else {
     ok = selected === q.answer;
   }
@@ -265,7 +336,7 @@ function handleCheck() {
 }
 
 function markAnswerVisuals(q, ok) {
-  if (q.type === "order") return; // giữ nguyên chip đã đặt
+  if (q.type === "order" || q.type === "match") return; // giữ nguyên lựa chọn đã đặt
   const grid = document.getElementById("opt-grid");
   if (!grid) return;
   const cards = [...grid.children];
@@ -280,7 +351,7 @@ function renderFeedbackBar(ok, q) {
   const bar = document.getElementById("bottom-bar");
   bar.innerHTML = `
     <div class="feedback-bar ${ok ? "ok" : "no"}">
-      <div class="feedback-msg">${ok ? "🎉 Chính xác!" : "❌ Chưa đúng — đáp án: " + q.answer}</div>
+      <div class="feedback-msg">${ok ? "🎉 Chính xác!" : "❌ Chưa đúng — đáp án: " + (q.answerText || q.answer)}</div>
       <button class="btn ${ok ? "btn-forest" : "btn-primary"}" id="next-btn">Tiếp tục</button>
     </div>
   `;

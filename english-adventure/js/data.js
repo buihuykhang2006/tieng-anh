@@ -290,6 +290,19 @@ function buildQuestions(unit, lesson) {
     });
   });
 
+  const matchingPairs = shuffle(vocab).slice(0, Math.min(4, vocab.length)).map((v) => ({
+    english: v.word,
+    vietnamese: v.vi,
+  }));
+  qs.push({
+    type: "match",
+    prompt: "Nối từ tiếng Anh với nghĩa tiếng Việt",
+    pairs: matchingPairs,
+    english: matchingPairs.map((pair) => pair.english),
+    vietnamese: shuffle(matchingPairs.map((pair) => pair.vietnamese)),
+    answerText: matchingPairs.map((pair) => `${pair.english} = ${pair.vietnamese}`).join(", "),
+  });
+
   (lesson.sentences || []).forEach((s) => {
     const words = s.prompt.split(",").map((w) => w.trim()).filter(Boolean);
     qs.push({
@@ -300,5 +313,7 @@ function buildQuestions(unit, lesson) {
     });
   });
 
-  return shuffle(qs).slice(0, 10);
+  const matchingQuestion = qs.find((question) => question.type === "match");
+  const otherQuestions = shuffle(qs.filter((question) => question !== matchingQuestion));
+  return [matchingQuestion, ...otherQuestions].slice(0, 10);
 }
