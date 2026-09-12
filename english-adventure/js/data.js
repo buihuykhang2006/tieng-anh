@@ -292,10 +292,18 @@ function buildQuestions(unit, lesson) {
 
   const translatedVocab = vocab.filter((v) => v.vi !== v.word);
   const translationVocab = shuffle(translatedVocab.length >= 2 ? translatedVocab : vocab).slice(0, 2);
-  const vietnameseDistractors = randomOtherVocab(unit, translationVocab[0].word, 8)
+  const localVietnameseDistractors = shuffle(vocab.filter((v) =>
+    v.word !== translationVocab[0].word && v.vi !== v.word
+  ));
+  const globalVietnameseDistractors = randomOtherVocab(unit, translationVocab[0].word, 8)
     .filter((v) => v.vi !== v.word)
-    .slice(0, 2)
     .map((v) => v.vi);
+  const vietnameseDistractors = [
+    ...localVietnameseDistractors.map((v) => v.vi),
+    ...globalVietnameseDistractors,
+  ]
+    .filter((meaning, index, meanings) => meanings.indexOf(meaning) === index)
+    .slice(0, 2);
   const translationQuestions = [
     {
       type: "translate",
@@ -316,6 +324,20 @@ function buildQuestions(unit, lesson) {
   ];
   qs.push(...translationQuestions);
 
+  const dialogueWords = vocab.slice(0, 2);
+  const dialogueAnswer = `${dialogueWords[1].word}, please.`;
+  qs.push({
+    type: "dialogue",
+    prompt: "Hoàn thành hội thoại",
+    dialogueQuestion: `${dialogueWords[0].word} or ${dialogueWords[1].word}?`,
+    options: shuffle([
+      `${dialogueWords[0].word}, please.`,
+      dialogueAnswer,
+      "Welcome.",
+    ]),
+    answer: dialogueAnswer,
+  });
+
   (lesson.sentences || []).forEach((s) => {
     const words = s.prompt.split(",").map((w) => w.trim()).filter(Boolean);
     qs.push({
@@ -326,7 +348,7 @@ function buildQuestions(unit, lesson) {
     });
   });
 
-  const requiredTranslationQuestions = qs.filter((question) => question.type === "translate");
-  const otherQuestions = shuffle(qs.filter((question) => question.type !== "translate"));
-  return [...requiredTranslationQuestions, ...otherQuestions].slice(0, 10);
+  const requiredQuestions = qs.filter((question) => ["translate", "dialogue"].includes(question.type));
+  const otherQuestions = shuffle(qs.filter((question) => !["translate", "dialogue"].includes(question.type)));
+  return [...requiredQuestions, ...otherQuestions].slice(0, 10);
 }
