@@ -83,16 +83,29 @@ const UNIT_ICONS = {
 const UNIT_COLORS = ["#3FA7D6", "#8E7CC3", "#E85D75", "#3FA76B", "#F2994A", "#F7B267", "#7FBCB8", "#FF6B6B", "#4ECDC4", "#5B8DEF"];
 
 const VOCAB_WORD_ORDER = [...new Set(Object.values(WORD_BANK).flat())];
-const UNIQUE_ICON_MARKS = ["🔴", "🔵", "🟢", "🟡", "🟣", "🟠", "⚫", "⚪", "🟤", "🩷", "⭐", "✨", "🌟", "💫", "🔥", "💧", "🍀", "🌈", "🌙", "☀️", "🍎", "🍋", "🍇", "🥕", "🌸", "🌻", "🌿", "🎈", "🎵", "🎯", "🚀", "💎"];
 
-function getUniqueIconMark(word) {
-  const index = VOCAB_WORD_ORDER.indexOf(word);
-  if (index < 0) return "✨";
-  const size = UNIQUE_ICON_MARKS.length;
-  const first = UNIQUE_ICON_MARKS[Math.floor(index / size) % size];
-  const second = UNIQUE_ICON_MARKS[index % size];
-  return `${first}${second}`;
+function buildUniqueWordLabels() {
+  const labels = {};
+  const used = new Set();
+
+  VOCAB_WORD_ORDER.forEach((word) => {
+    const letters = word.replace(/[^a-z]/gi, "").toUpperCase();
+    let label = letters.slice(0, 2) || "??";
+    let length = 2;
+    while (used.has(label) && length <= letters.length) {
+      length += 1;
+      label = letters.slice(0, length);
+    }
+    if (used.has(label)) label = `${letters.slice(0, 1)}${letters.slice(-1)}`;
+    if (used.has(label)) label = `${label}${VOCAB_WORD_ORDER.indexOf(word) + 1}`;
+    labels[word] = label;
+    used.add(label);
+  });
+
+  return labels;
 }
+
+const VOCAB_WORD_LABELS = buildUniqueWordLabels();
 
 function buildVocabulary(word) {
   const trimmed = String(word).trim();
@@ -131,10 +144,15 @@ function buildVocabulary(word) {
     Store: "Cửa hàng", Music: "Âm nhạc", Adventure: "Phiêu lưu", Future: "Tương lai"
   };
 
+  const baseIcon = emojiMap[trimmed] || emojiMap[base];
+  const baseIconCount = VOCAB_WORD_ORDER.filter((vocabWord) =>
+    (emojiMap[vocabWord] || emojiMap[vocabWord.toLowerCase().replace(/\s+/g, "")]) === baseIcon
+  ).length;
+
   return {
     word: trimmed,
     vi: viMap[trimmed] || trimmed,
-    emoji: `${emojiMap[trimmed] || emojiMap[base] || "📘"}${getUniqueIconMark(trimmed)}`,
+    emoji: baseIcon && baseIconCount === 1 ? baseIcon : (VOCAB_WORD_LABELS[trimmed] || trimmed.slice(0, 2).toUpperCase()),
     ipa: `/${base}/`
   };
 }
